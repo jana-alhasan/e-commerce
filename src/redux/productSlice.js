@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export const fetchAllProducts = createAsyncThunk(
   'products/fetchAllProducts',
-  async ({ currentPage, productsPerPage, sortBy }, { rejectWithValue }) => {
+  async ({ currentPage, productsPerPage, sortBy }) => {
     try {
       const response = await axios.get(
         'https://fakestoreapi.com/products',
@@ -20,11 +20,11 @@ export const fetchAllProducts = createAsyncThunk(
         return data;
       } else {
         console.error("Invalid data format:", data);
-        return rejectWithValue("Invalid data format");
+
       }
     } catch (error) {
       console.error('Error fetching all products:', error);
-      return rejectWithValue(error.message || 'Error fetching all products');
+
     }
   }
 );
