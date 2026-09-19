@@ -1,70 +1,56 @@
-# Getting Started with Create React App
+# E-Commerce Web App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A responsive e-commerce web application built with React, featuring product
+browsing, search, cart management, authentication, and a multi-step checkout
+flow. Product data is powered by [Fake Store API](https://fakestoreapi.com/).
 
-## Available Scripts
+## ✨ Features
 
-In the project directory, you can run:
+- **Product Catalog** — Browse products by category with pagination and sorting
+- **Search** — Real-time product search from the header
+- **Product Details** — Dedicated page per product with quantity selection
+- **Shopping Cart** — Add, remove, and update items with live total calculation
+- **Authentication** — Login flow with form validation and error handling
+- **Checkout** — Multi-field order form with validation via React Hook Form + Yup
+- **Loading States** — Skeleton loaders for products, details, and cart while data fetches
+- **Reusable Dialogs** — Confirmation dialogs for delete and login-required actions
 
-### `npm start`
+## 🛠️ Built With
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **React** — UI library
+- **Redux Toolkit** — Global state management (auth, cart, products, categories)
+- **React Router v6** — Client-side routing
+- **Material UI (MUI)** — Component library and styling
+- **React Hook Form + Yup** — Form handling and schema validation
+- **Axios** — HTTP client, wrapped in a dedicated `services/` layer
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 📁 Project Structure
 
-### `npm test`
+```
+src/
+├── components/      # Reusable UI components (header, product card, dialogs, skeletons)
+├── pages/           # Route-level pages (Home, Login, Cart, Checkout, Product Details)
+├── redux/           # Redux Toolkit slices (auth, cart, products, categories)
+├── services/        # API calls, separated from state management
+├── router/          # Route definitions
+└── App.js           # Root component and layout
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 🚧 Status
 
-### `npm run build`
+Core shopping flow is complete: browsing, searching, product details, cart
+management, and checkout form validation all work end-to-end against the
+Fake Store API.
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Planned Next
+- Persist authentication state (localStorage or `redux-persist`)
+- Connect checkout to a mock order-confirmation flow (clear cart + confirmation page)
+- Derive cart/user identifiers from the authenticated user instead of static values
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🎯 What I Learned
 
-### `npm run eject`
+Structuring a mid-sized React app with a clear separation between API calls
+(`services/`), state (`redux/`), and UI (`components/`, `pages/`), and using
+React Hook Form with Yup to manage multi-field form validation cleanly.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
