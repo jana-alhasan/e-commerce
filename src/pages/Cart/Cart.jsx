@@ -58,7 +58,7 @@ const Cart = () => {
       )
       .toFixed(2);
   };
-  console.log("fromcartpage", cartItems);
+
 
   return (
     <Grid container spacing={2}>
