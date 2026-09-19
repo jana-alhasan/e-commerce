@@ -158,7 +158,7 @@ function HomePage() {
 
     try {
       const { minPrice, maxPrice } = formData;
-      console.log("Form Data:", formData);
+
 
       let filteredProducts;
 
@@ -183,7 +183,7 @@ function HomePage() {
         const categoryProducts = await Promise.all(promises);
         filteredProducts = categoryProducts.flat();
       } else {
-        console.log("No selected categories, applying sorting only.");
+
         filteredProducts = await fetchAllProducts(
           currentPage,
           productsPerPage,
