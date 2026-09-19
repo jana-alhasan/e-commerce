@@ -9,7 +9,7 @@ import {
   FormHelperText,
   Grid,
 } from "@mui/material";
-import { loginUser, selectError, selectUser } from "../../redux/authSlice";
+import { loginUser, selectError } from "../../redux/authSlice";
 import { className } from "./styles";
 
 const Login = () => {
@@ -30,36 +30,38 @@ const Login = () => {
     });
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+    const validate = () => {
     const newErrors = {};
     if (!formData.username.trim()) {
       newErrors.username = "Username is required";
-    } else if (formData.username.trim().length < 6) {
-      newErrors.username = "Username must be at least 6 characters";
     }
+    
     if (!formData.password.trim()) {
       newErrors.password = "Password is required";
-    } else if (formData.password.trim().length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password.trim())) {
-      newErrors.password =
-        "Password must contain at least one uppercase letter, one lowercase letter, and one number";
+    }
+    
+    return newErrors;
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+   const newErrors = validate();
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      return;
     }
     dispatch(loginUser(formData))
     .unwrap()
     .then(() => {
-      if (user) {
-        console.log('Successful login');
+      
         navigate('/');
-      } else {
-        console.log('Unsuccessful login');
-      }
+      
     })
-    .catch((error) => {
-      console.log('Unsuccessful login', error);
-    });
-  }
+     .catch(() => {
+        // authSlice already stores a user-facing message in `error`,
+        // shown below via <FormHelperText>{error}</FormHelperText>
+      });
+  };
 
   return (
     <Grid container style={className.container} justifyContent={"center"}>
@@ -82,7 +84,7 @@ const Login = () => {
         <Typography component="h1" variant="h5" style={className.Font}>
           Login to your account
         </Typography>
-        <form style={className.form} onSubmit={handleSubmit}>
+        <form style={className.form} onSubmit={handleSubmit} noValidate>
           <TextField
             variant="outlined"
             margin="normal"
