@@ -72,13 +72,12 @@ const cartSlice = createSlice({
       .addCase(updateCartData.pending, (state) => {
         state.cartLoading = true;
         state.status = 'loading';
-        console.log('Cart Update: Loading started');
+
       })
       .addCase(updateCartData.fulfilled, (state, action) => {
         state.cartLoading = false; 
         state.status = 'succeeded';
-        console.log('Updated Cart success:', action.payload);
-        console.log('state Cart:', JSON.parse(JSON.stringify(state)));
+
      
       })
       .addCase(updateCartData.rejected, (state, action) => {
