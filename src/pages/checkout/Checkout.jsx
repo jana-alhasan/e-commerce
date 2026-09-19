@@ -84,7 +84,7 @@ function Checkout() {
   }
 
   const onSubmit = (data) => {
-    console.log(data);
+
   };
   // ************************************************
   const subtotal = Number(calculateTotal(cartItems).toFixed(2));
