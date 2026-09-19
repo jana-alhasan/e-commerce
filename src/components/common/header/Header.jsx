@@ -26,14 +26,14 @@ const Header = () => {
   const user = useSelector(selectUser);
   const navigate=useNavigate();
   const dispatch = useDispatch();
-  console.log("l", user)
+
   const handleAuthButtonClick = () => {
     if (user) {
       dispatch(resetUser());
-      console.log("loggedOut", user)
+
     } else {
       navigate('/login');
-      console.log("loggedOut", user)
+
     }
   };
   return (
