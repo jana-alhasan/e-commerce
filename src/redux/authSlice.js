@@ -4,7 +4,7 @@ import { fetchLogin } from '../services/authApi';
 export const loginUser = createAsyncThunk('auth/loginUser', async (credentials) => {
   try {
     const response = await fetchLogin(credentials);
-    console.log('API responseee:', response?.token);
+  
     return response?.token;
   } catch (error) {
     if (error.response) {
@@ -39,7 +39,7 @@ const authSlice = createSlice({
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        console.log('API response:', action.payload);
+
         state.user = { token: action.payload || null };
         state.error = null;
       })
