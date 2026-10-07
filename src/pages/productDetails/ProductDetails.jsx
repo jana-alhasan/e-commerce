@@ -1,21 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
-import {
-  Box,
-  Typography,
-  Grid,
-  Stack,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-} from "@mui/material";
-import { KeyboardArrowDown } from "@mui/icons-material";
+import { useDispatch, useSelector } from "react-redux";
+import { Box, Button, Grid, Stack, Typography } from "@mui/material";
 import { addToCart } from "../../redux/cartSlice";
 import { selectUser } from "../../redux/authSlice";
 import {
@@ -32,6 +18,9 @@ import DetailsSkeleton from "../../components/skeleton/DetailsSkeleton";
 import ProductCardSkeleton from "../../components/skeleton/ProductCardSkeleton";
 import LoginConfirmationDialog from "../../components/common/LoginConfirmationDialog/LoginConfirmationDialog";
 import { className } from "./styles";
+
+const displayValue = (value) =>
+  value === null || value === undefined || value === "" ? "Not provided" : value;
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -91,85 +80,54 @@ const ProductDetails = () => {
     );
   }
 
-  const { title, price, category, description, image, rating } = product;
-  const { rate } = rating || {};
-  const productTitle = Array.isArray(title)
-    ? title[0] || "not found"
-    : title?.toString() || "not found";
-  const productPrice = Array.isArray(price)
-    ? price[0] || "not found"
-    : price?.toString() || "not found";
-  const productCategory = Array.isArray(category)
-    ? category[0] || "not found"
-    : category?.toString() || "not found";
-  const productDescription = Array.isArray(description)
-    ? description[0] || "not found"
-    : description?.toString() || "not found";
-  const productImage = Array.isArray(image)
-    ? image[0] || "not found"
-    : image?.toString() || "not found";
-  const productRating = Array.isArray(rate)
-    ? rate[0] || "not found"
-    : rate?.toString() || "not found";
+  const {
+    title,
+    price,
+    category,
+    description,
+    image,
+    images = [],
+    rating = {},
+    brand,
+    sku,
+    stock,
+    availabilityStatus,
+    shippingInformation,
+    returnPolicy,
+    warrantyInformation,
+    reviews = [],
+  } = product;
 
-  const data = [
-    { vitamins: "Vitamin A", quantity: "1000 IU", percentDV: "20%" },
-    { vitamins: "Vitamin B", quantity: "2 mg", percentDV: "40%" },
-    { vitamins: "Vitamin C", quantity: "30 mg", percentDV: "60%" },
-    { vitamins: "Vitamin D", quantity: "400 IU", percentDV: "80%" },
-    { vitamins: "Vitamin E", quantity: "10 IU", percentDV: "20%" },
-    { vitamins: "Vitamin K", quantity: "80 mcg", percentDV: "160%" },
-    { vitamins: "Vitamin B12", quantity: "6 mcg", percentDV: "120%" },
-    { vitamins: "Folate", quantity: "400 mcg", percentDV: "80%" },
-  ];
+  const galleryImages = [image, ...images.filter((item) => item !== image)]
+    .filter(Boolean)
+    .slice(0, 3);
 
   const detailsArray = [
-    {
-      label: "SKU",
-      value: "76645",
-      textColor: "var(--c-1-a, #151515)",
-    },
-    {
-      label: "Category",
-      value: productCategory || "No Category",
-      textDecoration: "underline",
-      textColor: "var(--c-1-a, #151515)",
-    },
+    { label: "SKU", value: displayValue(sku) },
+    { label: "Category", value: displayValue(category) },
+    { label: "Brand", value: displayValue(brand) },
     {
       label: "Stock",
-      value: "In Stock",
+      value: stock === null || stock === undefined ? "Not provided" : `${stock} items`,
       textColor: "var(--c-2-a, #6A983C)",
-      textDecoration: "underline",
-    },
-    {
-      label: "Farm",
-      value: "Grocery Tarm Fields",
-      textColor: "var(--c-1-a, #151515)",
     },
   ];
 
   const moreDetailsArray = [
-    {
-      label: "Freshness",
-      value: "1 days old",
-      textColor: "var(--c-1-a, #151515)",
-    },
-    {
-      label: "Buy by",
-      value: "pcs, kgs, box, pack",
-      textColor: "var(--c-1-a, #151515)",
-    },
-    {
-      label: "Delivery",
-      value: "in 2 days",
-      textColor: "var(--c-1-a, #151515)",
-    },
-    {
-      label: "Delivery area",
-      value: "Czech republic",
-      textColor: "var(--c-1-a, #151515)",
-    },
+    { label: "Availability", value: displayValue(availabilityStatus) },
+    { label: "Shipping", value: displayValue(shippingInformation) },
+    { label: "Returns", value: displayValue(returnPolicy) },
+    { label: "Warranty", value: displayValue(warrantyInformation) },
   ];
+
+  const relatedProducts = [
+    ...products.filter(
+      (item) => item.id !== product.id && item.category === product.category
+    ),
+    ...products.filter(
+      (item) => item.id !== product.id && item.category !== product.category
+    ),
+  ].slice(0, 4);
 
   const handleAddToCartClick = () => {
     if (!user?.token) {
@@ -180,50 +138,33 @@ const ProductDetails = () => {
     dispatch(addToCart(product));
   };
 
-  const handleClose = () => {
-    setLoginDialogOpen(false);
-  };
-
   return (
     <Grid container justifyContent="space-between" spacing={4}>
-      <Grid
-        item
-        md={6}
-        xs={12}
-        display={{ lg: "block", md: "block", sm: "flex", xs: "flex" }}
-        justifyContent="center"
-      >
-        {!productLoading ? (
-          <ImageBox image={productImage} title={productTitle} />
-        ) : (
-          <ImageSkeleton />
-        )}
-        <Stack display={{ lg: "block", md: "block", sm: "none", xs: "none" }}>
-          {!productLoading ? (
-            <>
-              <ImageBox image={productImage} title={productTitle} />
-              <ImageBox image={productImage} title={productTitle} />
-            </>
-          ) : (
-            <ImageSkeleton />
-          )}
+      <Grid item md={6} xs={12}>
+        <Stack spacing={2} alignItems="center">
+          {galleryImages.map((galleryImage, index) => (
+            <ImageBox
+              key={`${galleryImage}-${index}`}
+              image={galleryImage}
+              title={`${title}${galleryImages.length > 1 ? ` view ${index + 1}` : ""}`}
+            />
+          ))}
         </Stack>
       </Grid>
-      <Grid item md={6} display="flex" justifyContent="end">
-        <Stack spacing={4} marginRight={{ lg: "9rem", md: "9rem", sm: "0" }}>
-          {!productLoading ? (
-            <ProductInfo
-              title={productTitle}
-              rate={productRating}
-              description={productDescription}
-            />
-          ) : (
-            <DetailsSkeleton />
-          )}
+
+      <Grid item md={6} xs={12} display="flex" justifyContent="end">
+        <Stack spacing={4} width="100%" marginRight={{ lg: "9rem", md: "3rem", sm: "0" }}>
+          <ProductInfo
+            title={title}
+            rate={rating.rate}
+            reviewCount={rating.count}
+            description={description}
+          />
 
           <Stack
             flexDirection={{ lg: "row", md: "row", sm: "column", xs: "column" }}
             justifyContent="space-between"
+            gap={2}
           >
             <Box style={className.detailsBox}>
               {detailsArray.map((detail) => (
@@ -232,7 +173,6 @@ const ProductDetails = () => {
                   label={detail.label}
                   value={detail.value}
                   textColor={detail.textColor}
-                  textDecoration={detail.textDecoration}
                 />
               ))}
             </Box>
@@ -242,12 +182,11 @@ const ProductDetails = () => {
                   key={detail.label}
                   label={detail.label}
                   value={detail.value}
-                  textColor={detail.textColor}
-                  textDecoration={detail.textDecoration}
                 />
               ))}
             </Box>
           </Stack>
+
           <Stack
             flexDirection={{ lg: "row", md: "row", sm: "column", xs: "column" }}
             alignItems={{ lg: "center", md: "center", sm: "start", xs: "start" }}
@@ -255,47 +194,20 @@ const ProductDetails = () => {
             gap="2rem"
             style={className.priceBox}
           >
-            <Typography style={className.price}>{`${productPrice} USD`}</Typography>
-            <Box display="flex" gap="2rem">
-              <Button style={className.quantityBox}>
-                1
-                <span style={className.tabs}>
-                  | pcs
-                  <KeyboardArrowDown style={className.icon} />
-                </span>
-              </Button>
-              <Button onClick={handleAddToCartClick} style={className.addToCart}>
-                + Add to cart
-              </Button>
-              <LoginConfirmationDialog
-                open={loginDialogOpen}
-                onClose={handleClose}
-              />
-            </Box>
+            <Typography style={className.price}>{`${price} USD`}</Typography>
+            <Button onClick={handleAddToCartClick} style={className.addToCart}>
+              + Add to cart
+            </Button>
+            <LoginConfirmationDialog
+              open={loginDialogOpen}
+              onClose={() => setLoginDialogOpen(false)}
+            />
           </Stack>
-          <MyTabs />
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>Vitamins</TableCell>
-                  <TableCell>Quantity</TableCell>
-                  <TableCell>% DV</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data.map((row) => (
-                  <TableRow key={row.vitamins}>
-                    <TableCell style={className.tableRows}>{row.vitamins}</TableCell>
-                    <TableCell style={className.tableRows}>{row.quantity}</TableCell>
-                    <TableCell style={className.tableRows}>{row.percentDV}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+
+          <MyTabs description={description} reviews={reviews} />
         </Stack>
       </Grid>
+
       <Grid item container sm={12} spacing={5}>
         <Grid item xs={12}>
           <Typography variant="h5">Related products</Typography>
@@ -303,8 +215,8 @@ const ProductDetails = () => {
         {productLoading ? (
           <ProductCardSkeleton />
         ) : (
-          products.slice(0, 4).map((relatedProduct) => (
-            <Grid item key={relatedProduct.id} lg={3} md={4} sm={6}>
+          relatedProducts.map((relatedProduct) => (
+            <Grid item key={relatedProduct.id} lg={3} md={4} sm={6} xs={12}>
               <ProductCard product={relatedProduct} isGridView />
             </Grid>
           ))
