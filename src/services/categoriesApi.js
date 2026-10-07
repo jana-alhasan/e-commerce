@@ -1,53 +1,34 @@
 import axios from "axios";
 
+const PRODUCTS_API = "https://dummyjson.com/products";
+
 export const fetchCategories = async () => {
-  try {
-    const response = await axios.get("https://fakestoreapi.com/products/categories");
-    const data = response.data;
-    if (
-      data &&
-      data?.length > 0 &&
-      Array.isArray(data)
-    ) {
-      return data;
-    } else {
-      console.error("Invalid data format:", data);
-      return [];
-    }
-  }
-  catch (error) {
-    console.error('Error fetching categories from API:', error.message);
-    throw error;
-  }
+  const response = await axios.get(`${PRODUCTS_API}/category-list`);
+  return Array.isArray(response.data) ? response.data : [];
 };
 
 export const fetchCategoryItemCounts = async (categories) => {
-  try {
-    const itemCountPromises = categories.map(async (category) => {
-      try {
-        const response = await axios.get(`https://fakestoreapi.com/products/category/${category}`);
-        const data = response.data;
-        if (
-          data &&
-          data?.length > 0 &&
-          Array.isArray(data)
-        ) {
-          return data.length;
-        }
-        else {
-          console.error("Invalid data format:", data);
-          return [];
-        }
-      }
-      catch (error) {
-        console.error(`Error fetching item count for category ${category}:`, error);
-        return 0;
-      }
-    });
-
-    return Promise.all(itemCountPromises);
-  } catch (error) {
-    console.error("Error fetching category item counts:", error);
-    throw error;
+  if (!Array.isArray(categories) || categories.length === 0) {
+    return [];
   }
+
+  const response = await axios.get(PRODUCTS_API, {
+    params: {
+      limit: 0,
+      select: "category",
+    },
+  });
+
+  const products = Array.isArray(response.data?.products)
+    ? response.data.products
+    : [];
+  const countsByCategory = products.reduce((counts, product) => {
+    const category = product?.category;
+    if (category) {
+      counts[category] = (counts[category] || 0) + 1;
+    }
+    return counts;
+  }, {});
+
+  return categories.map((category) => countsByCategory[category] || 0);
 };
