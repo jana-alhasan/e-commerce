@@ -81,6 +81,10 @@ const Login = () => {
         <Typography component="h1" variant="h5" style={className.Font}>
           Login to your account
         </Typography>
+        <Typography variant="body2" sx={{ mt: 1 }}>
+          Demo account (DummyJSON test data): <strong>emilys</strong> /{" "}
+          <strong>emilyspass</strong>
+        </Typography>
         <form style={className.form} onSubmit={handleSubmit} noValidate>
           <TextField
             variant="outlined"
