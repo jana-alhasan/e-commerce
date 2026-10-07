@@ -1,33 +1,43 @@
-import axios from 'axios';
+import axios from "axios";
 
-const API_URL = 'https://fakestoreapi.com/auth/login';
-
+const API_URL = "https://dummyjson.com/auth/login";
 
 export const fetchLogin = async (credentials) => {
+  if (!credentials || typeof credentials !== "object") {
+    throw new Error("Invalid credentials format");
+  }
+
   try {
-    if (!credentials || typeof credentials !== 'object') {
-      throw new Error('Invalid credentials format');
+    const response = await axios.post(API_URL, {
+      username: credentials.username,
+      password: credentials.password,
+      expiresInMins: 60,
+    });
+
+    const accessToken = response?.data?.accessToken;
+    if (!accessToken) {
+      throw new Error("Invalid response format");
     }
 
-    const response = await axios.post(API_URL, credentials);
-
-    if (!response || !response?.data || response?.data?.error) {
-      throw new Error(response?.data?.error || 'Invalid response format');
-    }
-    
-    return response.data;
-    
+    return {
+      token: accessToken,
+      username: response.data.username || credentials.username,
+      firstName: response.data.firstName || "",
+      lastName: response.data.lastName || "",
+    };
   } catch (error) {
-    let errorMessage = 'Error during login request';
+    if (error.response?.status === 400) {
+      throw new Error("Invalid username or password");
+    }
 
     if (error.response) {
-      errorMessage = `Server error: ${error.response.status}`;
-    } else if (error.request) {
-      errorMessage = 'No response received from the server';
-    } else if (error.message) {
-      errorMessage = error.message;
+      throw new Error(`Login service error: ${error.response.status}`);
     }
 
-    throw new Error(errorMessage);
+    if (error.request) {
+      throw new Error("No response received from the login service");
+    }
+
+    throw new Error(error.message || "Unable to sign in");
   }
 };
