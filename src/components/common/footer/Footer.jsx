@@ -1,24 +1,19 @@
-import { Grid, Typography, Box } from "@mui/material";
-import Title from "../title/Title";
-import { className } from "./styles";
+import { Box, Divider, Stack, Typography } from "@mui/material";
 
-const Footer = ({ footerData }) => {
-  return (
-    <Grid container>
-      {footerData.map((column) => (
-        <Grid item key={column.title} md={3} sm={6} xs={12} margin="2rem 0">
-          <Title content={column.title} />
-          <Box style={className.footerContainer}>
-            {column.footerContent.map((text) => (
-              <Typography style={className.footerItem} key={text}>
-                {text}
-              </Typography>
-            ))}
-          </Box>
-        </Grid>
-      ))}
-    </Grid>
-  );
-};
+const Footer = () => (
+  <Box component="footer" sx={{ mt: 8, pb: 4 }}>
+    <Divider sx={{ mb: 3 }} />
+    <Stack spacing={1}>
+      <Typography variant="subtitle1" fontWeight={700}>
+        E-Commerce Frontend Demo
+      </Typography>
+      <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 760 }}>
+        React portfolio project using public demo product and authentication data.
+        Cart and checkout behavior are local frontend simulations; no real payment,
+        inventory, fulfillment, or backend order is created.
+      </Typography>
+    </Stack>
+  </Box>
+);
 
 export default Footer;
