@@ -1,39 +1,44 @@
-import { Tab,Tabs,Box,Typography } from "@mui/material";
+import { useState } from "react";
+import { Box, Tab, Tabs, Typography } from "@mui/material";
 import { className } from "./styles";
 
-function MyTabs() {
-  const tabStyles = {
-    textColor: 'var(--c-1-a, #151515)', 
-    indicatorColor: '#6A983C', 
-  };
+function MyTabs({ description, reviews = [] }) {
+  const [activeTab, setActiveTab] = useState(0);
+
   return (
     <>
-      <Tabs value={0} {...tabStyles}>
-        <Tab label="Description" style={{ color: tabStyles.textColor }} />
-        <Tab label="Reviews" />
-        <Tab label="Questions" />
+      <Tabs
+        value={activeTab}
+        onChange={(_, nextValue) => setActiveTab(nextValue)}
+        aria-label="Product information"
+        TabIndicatorProps={{ style: { backgroundColor: "#6A983C" } }}
+      >
+        <Tab label="Description" />
+        <Tab label={`Reviews (${reviews.length})`} />
       </Tabs>
-      <Box value={0} index={0}>
-        <Typography variant="h6" style={className.Topspace}>
-          Origins
-        </Typography>
-        <Typography variant="p">
-          We work hard to ensure that the fruit and vegetables we sell are fresh
-          and high in quality. If we don’t grow them ourselves, we source them
-          from carefully chosen suppliers, preferring to buy locally whenever
-          possible.
-        </Typography>
-        <Typography variant="h6" style={className.Topspace}>
-          How to cook
-        </Typography>
-        <Typography variant="p">
-          From roasts, salads and soups to casseroles and cakes, Carrots will
-          lend sweetness, texture and colour to an enormous number of recipes.
-        </Typography>
-        <Typography variant="h6" style={className.Topspace}>
-          Full of Vitamins!
-        </Typography>
-      </Box>
+
+      {activeTab === 0 ? (
+        <Box py={2} role="tabpanel">
+          <Typography>{description || "No description is available."}</Typography>
+        </Box>
+      ) : (
+        <Box py={2} role="tabpanel">
+          {reviews.length > 0 ? (
+            reviews.map((review, index) => (
+              <Box key={`${review.reviewerName}-${index}`} mb={2}>
+                <Typography variant="subtitle2">
+                  {review.reviewerName} · {review.rating}/5
+                </Typography>
+                <Typography style={className.Topspace}>
+                  {review.comment || "No written comment."}
+                </Typography>
+              </Box>
+            ))
+          ) : (
+            <Typography>No reviews are available for this product.</Typography>
+          )}
+        </Box>
+      )}
     </>
   );
 }
