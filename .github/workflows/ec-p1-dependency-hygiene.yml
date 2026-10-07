@@ -1,0 +1,47 @@
+name: E-Commerce Dependency Hygiene
+
+on:
+  push:
+    branches:
+      - ec-p1-dependency-hygiene
+
+permissions:
+  contents: write
+
+jobs:
+  audit-fix-and-validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Report production dependency audit before fix
+        run: npm audit --omit=dev || true
+      - name: Apply non-breaking npm audit fixes
+        run: npm audit fix
+      - name: Commit dependency metadata when changed
+        run: |
+          if git diff --quiet -- package.json package-lock.json; then
+            echo "No dependency metadata changes."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add package.json package-lock.json
+            git commit -m "Apply non-breaking dependency fixes"
+            git push origin HEAD:ec-p1-dependency-hygiene
+          fi
+      - name: Reinstall from lockfile
+        run: npm ci
+      - name: Run tests
+        run: npm test -- --watchAll=false
+      - name: Build production bundle
+        run: npm run build
+      - name: Report production dependency audit after fix
+        run: npm audit --omit=dev || true
