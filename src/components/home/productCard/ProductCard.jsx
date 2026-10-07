@@ -1,4 +1,4 @@
-import { useState ,useEffect} from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -16,11 +16,8 @@ import Detail from "../../common/detail/Detail";
 import Rating from "../../common/rating/Rating";
 import Title from "../../common/title/Title";
 import Description from "./Description";
-import {
-  addToCart,
-  updateCartData,
-} from "../../../redux/cartSlice";
-import {  selectUser } from "../../../redux/authSlice";
+import { addToCart } from "../../../redux/cartSlice";
+import { selectUser } from "../../../redux/authSlice";
 import { className } from "./styles";
 import LoginConfirmationDialog from "../../common/LoginConfirmationDialog/LoginConfirmationDialog";
 
@@ -28,18 +25,17 @@ const ProductCard = ({ product, isGridView }) => {
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // const cartItems = useSelector(selectCartItems);
   const user = useSelector(selectUser);
 
-  const {id, title, price, category, description, image, rating } = product || {};
-  const { rate ,count} = rating || {};
+  const { id, title, price, category, description, image, rating } = product || {};
+  const { rate, count } = rating || {};
   const productTitle = Array.isArray(title)
     ? title[0] || "not found"
     : title?.toString() || "not found";
-  const productprice = Array.isArray(price)
+  const productPrice = Array.isArray(price)
     ? price[0] || "not found"
     : price?.toString() || "not found";
-  const productcategory = Array.isArray(category)
+  const productCategory = Array.isArray(category)
     ? category[0] || "not found"
     : category?.toString() || "not found";
   const productDescription = Array.isArray(description)
@@ -48,31 +44,24 @@ const ProductCard = ({ product, isGridView }) => {
   const productImage = Array.isArray(image)
     ? image[0] || "not found"
     : image?.toString() || "not found";
-  const productrating = Array.isArray(rate)
+  const productRating = Array.isArray(rate)
     ? rate[0] || "not found"
     : rate?.toString() || "not found";
-  const productcount = Array.isArray(count)
+  const productCount = Array.isArray(count)
     ? count[0] || "0"
     : count?.toString() || "0";
 
-  
-  const handleAddToCartClick = async () => {
-    if (!user) {
+  const handleAddToCartClick = () => {
+    if (!user?.token) {
       setLoginDialogOpen(true);
+      return;
     }
-    else{
-    dispatch(addToCart(product));
-    const userId = 8;
-    const { quantity } = product;
-    const date = "2023-12-10";
 
-    try {
-      await dispatch(updateCartData({ userId, productId: id, quantity, date }));
-    } catch (error) {
-      console.error("Error updating cart:", error.message);
+    if (product) {
+      dispatch(addToCart(product));
     }
-  }
   };
+
   const handleProductDetailClick = () => {
     navigate(`/product/${id}`);
   };
@@ -81,18 +70,17 @@ const ProductCard = ({ product, isGridView }) => {
     setLoginDialogOpen(false);
   };
 
-
   const detailsArray = [
     {
       label: "Freshness",
       value: "New (Extra fresh)",
       textColor: "var(--c-2-a, #6A983C)",
     },
-    { label: "Farm", value: productcategory  },
+    { label: "Farm", value: productCategory },
     { label: "Delivery", value: "Europe" },
     {
       label: "Stock",
-      value: `${productcount || 0} pcs`,
+      value: `${productCount || 0} pcs`,
       textColor: "var(--c-2-a, #6A983C)",
     },
   ];
@@ -102,9 +90,9 @@ const ProductCard = ({ product, isGridView }) => {
       <Stack flexDirection={isGridView ? "column" : "row"}>
         <Box
           className="imageContainer"
-          display={"flex"}
-          height={"280px"}
-          width={"100%"}
+          display="flex"
+          height="280px"
+          width="100%"
           maxWidth={isGridView ? "100%" : { sm: "200px", lg: "200px" }}
           justifyContent={isGridView ? "center" : "start"}
         >
@@ -112,9 +100,9 @@ const ProductCard = ({ product, isGridView }) => {
             component="img"
             image={productImage}
             style={className.media}
-            alt={`Product ${id}`}
-            onClick={() => handleProductDetailClick()}
-          ></CardMedia>
+            alt={productTitle}
+            onClick={handleProductDetailClick}
+          />
         </Box>
         <CardContent>
           <Stack
@@ -139,50 +127,34 @@ const ProductCard = ({ product, isGridView }) => {
               <Title content={productTitle} />
               <Description description={productDescription} />
               <Hidden smDown>
-                <Rating rate={productrating} />
-                {!isGridView
-                  ? detailsArray.map((detail, index) => (
-                      <Detail
-                        key={index}
-                        label={detail.label}
-                        value={detail.value}
-                        textColor={detail.textColor}
-                        textDecoration={detail.textDecoration}
-                      />
-                    ))
-                  : ""}
+                <Rating rate={productRating} />
+                {!isGridView &&
+                  detailsArray.map((detail) => (
+                    <Detail
+                      key={detail.label}
+                      label={detail.label}
+                      value={detail.value}
+                      textColor={detail.textColor}
+                      textDecoration={detail.textDecoration}
+                    />
+                  ))}
               </Hidden>
             </Box>
             <Box
               style={className.cardItemGrid}
               flexDirection={isGridView ? "row" : "column"}
               alignItems={isGridView ? "center" : "start"}
-              gap={"1rem"}
-              justifyContent={"space-between"}
+              gap="1rem"
+              justifyContent="space-between"
             >
-              <Title content={`${productprice} USD`} />
+              <Title content={`${productPrice} USD`} />
               {isGridView ? (
-                <>
-                  <Button
-                    style={className.buyNow}
-                    onClick={handleAddToCartClick}
-                  >
-                    Add To Cart
-                  </Button>
-              <LoginConfirmationDialog open={loginDialogOpen} onClose={handleClose} />
-                </>
+                <Button style={className.buyNow} onClick={handleAddToCartClick}>
+                  Add To Cart
+                </Button>
               ) : (
-                ""
-              )}
-              {!isGridView ? (
                 <>
                   <Hidden smDown>
-                    <Typography style={className.description}>
-                      <span style={{ textDecoration: "line-through" }}>
-                        48.657
-                      </span>
-                    </Typography>
-
                     <Typography style={className.description}>
                       <span style={{ fontWeight: "800" }}>Free Shipping</span>
                     </Typography>
@@ -192,28 +164,22 @@ const ProductCard = ({ product, isGridView }) => {
                   </Hidden>
                   <Button
                     style={className.detailButton}
-                    onClick={() => handleProductDetailClick()}
+                    onClick={handleProductDetailClick}
                   >
                     Product Detail
                     <KeyboardArrowRight />
                   </Button>
-                  <Button
-                    style={className.cartButton}
-                    onClick={handleAddToCartClick}
-                  >
-
+                  <Button style={className.cartButton} onClick={handleAddToCartClick}>
                     <ShoppingCartOutlined />
                     Add to Cart
                   </Button>
-               <LoginConfirmationDialog open={loginDialogOpen} onClose={handleClose} />
                 </>
-              ) : (
-                ""
               )}
             </Box>
           </Stack>
         </CardContent>
       </Stack>
+      <LoginConfirmationDialog open={loginDialogOpen} onClose={handleClose} />
     </Card>
   );
 };
