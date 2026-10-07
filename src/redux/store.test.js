@@ -2,6 +2,13 @@ jest.mock("../services/authApi", () => ({
   fetchLogin: jest.fn(),
 }));
 
+jest.mock("./productSlice", () => ({
+  __esModule: true,
+  default: (
+    state = { products: [], productsLength: 1, productLoading: false }
+  ) => state,
+}));
+
 import store, { loadPersistedState, STORAGE_KEY } from "./store";
 import { addToCart, clearCart } from "./cartSlice";
 
