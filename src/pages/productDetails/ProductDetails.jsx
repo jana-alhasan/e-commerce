@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -16,11 +16,7 @@ import {
   Paper,
 } from "@mui/material";
 import { KeyboardArrowDown } from "@mui/icons-material";
-import {
-  addToCart,
-  selectCartItems,
-  updateCartData,
-} from "../../redux/cartSlice";
+import { addToCart } from "../../redux/cartSlice";
 import { selectUser } from "../../redux/authSlice";
 import Detail from "../../components/common/detail/Detail";
 import ImageBox from "../../components/productDetails/imageBox/ImageBox";
@@ -33,29 +29,26 @@ import ProductCardSkeleton from "../../components/skeleton/ProductCardSkeleton";
 import LoginConfirmationDialog from "../../components/common/LoginConfirmationDialog/LoginConfirmationDialog";
 import { className } from "./styles";
 
-
 const ProductDetails = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
   const user = useSelector(selectUser);
   const products = useSelector((state) => state.products.products);
-  // const cartItems = useSelector(selectCartItems);
   const productLoading = useSelector(
     (state) => state.products.selectProductLoading
   );
-  const product = products.find((p) => p.id === parseInt(id));
-
+  const product = products.find((item) => item.id === Number(id));
 
   const { title, price, category, description, image, rating } = product || {};
   const { rate } = rating || {};
   const productTitle = Array.isArray(title)
     ? title[0] || "not found"
     : title?.toString() || "not found";
-  const productprice = Array.isArray(price)
+  const productPrice = Array.isArray(price)
     ? price[0] || "not found"
     : price?.toString() || "not found";
-  const productcategory = Array.isArray(category)
+  const productCategory = Array.isArray(category)
     ? category[0] || "not found"
     : category?.toString() || "not found";
   const productDescription = Array.isArray(description)
@@ -64,12 +57,9 @@ const ProductDetails = () => {
   const productImage = Array.isArray(image)
     ? image[0] || "not found"
     : image?.toString() || "not found";
-  const productrating = Array.isArray(rate)
+  const productRating = Array.isArray(rate)
     ? rate[0] || "not found"
     : rate?.toString() || "not found";
-  // console.log("cartItemss", cartItems[0]);
-
-
 
   const data = [
     { vitamins: "Vitamin A", quantity: "1000 IU", percentDV: "20%" },
@@ -90,7 +80,7 @@ const ProductDetails = () => {
     },
     {
       label: "Category",
-      value: productcategory || "No Category",
+      value: productCategory || "No Category",
       textDecoration: "underline",
       textColor: "var(--c-1-a, #151515)",
     },
@@ -107,7 +97,7 @@ const ProductDetails = () => {
     },
   ];
 
-  const moredetailsArray = [
+  const moreDetailsArray = [
     {
       label: "Freshness",
       value: "1 days old",
@@ -130,28 +120,14 @@ const ProductDetails = () => {
     },
   ];
 
-  const handleUpdateCart = async () => {
-    const userId = 8;
-    const { quantity } = product;
-    const date = "2023-12-10";
-    try {
-      await dispatch(
-        updateCartData({ userId: userId, quantity: quantity, date: date })
-      );
-    } catch (error) {
-      console.error("Error updating cart:", error.message);
-    }
-  };
-
-  const handleAddToCartClick = async () => {
-    if (!user) {
+  const handleAddToCartClick = () => {
+    if (!user?.token) {
       setLoginDialogOpen(true);
+      return;
     }
-    try {
-      await dispatch(addToCart(product));
-      handleUpdateCart();
-    } catch (error) {
-      console.error("Error updating cart:", error.message);
+
+    if (product) {
+      dispatch(addToCart(product));
     }
   };
 
@@ -166,15 +142,15 @@ const ProductDetails = () => {
         md={6}
         xs={12}
         display={{ lg: "block", md: "block", sm: "flex", xs: "flex" }}
-        justifyContent={"center"}
+        justifyContent="center"
       >
-        {  !productLoading ? (
+        {!productLoading ? (
           <ImageBox image={productImage} title={productTitle} />
         ) : (
           <ImageSkeleton />
         )}
         <Stack display={{ lg: "block", md: "block", sm: "none", xs: "none" }}>
-          { !productLoading ? (
+          {!productLoading ? (
             <>
               <ImageBox image={productImage} title={productTitle} />
               <ImageBox image={productImage} title={productTitle} />
@@ -186,24 +162,24 @@ const ProductDetails = () => {
       </Grid>
       <Grid item md={6} display="flex" justifyContent="end">
         <Stack spacing={4} marginRight={{ lg: "9rem", md: "9rem", sm: "0" }}>
-          { !productLoading?(
-             <ProductInfo
-             title={productTitle}
-             rate={productrating}
-             description={productDescription}
-           />
-          ):(
-            <DetailsSkeleton/>
+          {!productLoading ? (
+            <ProductInfo
+              title={productTitle}
+              rate={productRating}
+              description={productDescription}
+            />
+          ) : (
+            <DetailsSkeleton />
           )}
-         
+
           <Stack
             flexDirection={{ lg: "row", md: "row", sm: "column", xs: "column" }}
-            justifyContent={"space-between"}
+            justifyContent="space-between"
           >
             <Box style={className.detailsBox}>
-              {detailsArray.map((detail, index) => (
+              {detailsArray.map((detail) => (
                 <Detail
-                  key={index}
+                  key={detail.label}
                   label={detail.label}
                   value={detail.value}
                   textColor={detail.textColor}
@@ -212,9 +188,9 @@ const ProductDetails = () => {
               ))}
             </Box>
             <Box style={className.detailsBox}>
-              {moredetailsArray.map((detail, index) => (
+              {moreDetailsArray.map((detail) => (
                 <Detail
-                  key={index}
+                  key={detail.label}
                   label={detail.label}
                   value={detail.value}
                   textColor={detail.textColor}
@@ -225,20 +201,13 @@ const ProductDetails = () => {
           </Stack>
           <Stack
             flexDirection={{ lg: "row", md: "row", sm: "column", xs: "column" }}
-            alignItems={{
-              lg: "center",
-              md: "center",
-              sm: "start",
-              xs: "start",
-            }}
-            justifyContent={"space-between"}
-            gap={"2rem"}
+            alignItems={{ lg: "center", md: "center", sm: "start", xs: "start" }}
+            justifyContent="space-between"
+            gap="2rem"
             style={className.priceBox}
           >
-            <Typography
-              style={className.price}
-            >{`${productprice} USD`}</Typography>
-            <Box display={"flex"} gap={"2rem"}>
+            <Typography style={className.price}>{`${productPrice} USD`}</Typography>
+            <Box display="flex" gap="2rem">
               <Button style={className.quantityBox}>
                 1
                 <span style={className.tabs}>
@@ -246,13 +215,13 @@ const ProductDetails = () => {
                   <KeyboardArrowDown style={className.icon} />
                 </span>
               </Button>
-              <Button
-                onClick={handleAddToCartClick}
-                style={className.addToCart}
-              >
+              <Button onClick={handleAddToCartClick} style={className.addToCart}>
                 + Add to cart
               </Button>
-              <LoginConfirmationDialog open={loginDialogOpen} onClose={handleClose} />
+              <LoginConfirmationDialog
+                open={loginDialogOpen}
+                onClose={handleClose}
+              />
             </Box>
           </Stack>
           <MyTabs />
@@ -266,25 +235,11 @@ const ProductDetails = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {data?.map((row, index) => (
-                  <TableRow
-                    key={index}
-                    style={{
-                      background:
-                        index % 2 === 0
-                          ? "var(--c-1-i, #FDFDFD)"
-                          : "var(--c-1-j, #FFF)",
-                    }}
-                  >
-                    <TableCell style={className.tableRows}>
-                      {row.vitamins}
-                    </TableCell>
-                    <TableCell style={className.tableRows}>
-                      {row.quantity}
-                    </TableCell>
-                    <TableCell style={className.tableRows}>
-                      {row.percentDV}
-                    </TableCell>
+                {data.map((row) => (
+                  <TableRow key={row.vitamins}>
+                    <TableCell style={className.tableRows}>{row.vitamins}</TableCell>
+                    <TableCell style={className.tableRows}>{row.quantity}</TableCell>
+                    <TableCell style={className.tableRows}>{row.percentDV}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -294,14 +249,14 @@ const ProductDetails = () => {
       </Grid>
       <Grid item container sm={12} spacing={5}>
         <Grid item xs={12}>
-          <Typography variant="h5"> Related products</Typography>
+          <Typography variant="h5">Related products</Typography>
         </Grid>
-        {product && productLoading ? (
-          <ProductCardSkeleton/>
+        {productLoading ? (
+          <ProductCardSkeleton />
         ) : (
-          products.slice(0, 4).map((product) => (
-            <Grid item key={product.id} lg={3} md={4} sm={6} spacing={5}>
-              <ProductCard product={product} isGridView={true} />
+          products.slice(0, 4).map((relatedProduct) => (
+            <Grid item key={relatedProduct.id} lg={3} md={4} sm={6}>
+              <ProductCard product={relatedProduct} isGridView />
             </Grid>
           ))
         )}
