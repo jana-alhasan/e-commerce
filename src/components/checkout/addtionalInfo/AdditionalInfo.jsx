@@ -11,94 +11,89 @@ import { classname } from "./styles";
 function AdditionalInfo({ control, errors }) {
   return (
     <Box style={classname.BillingInfo}>
-      <Typography style={classname.title}>Additional informations</Typography>
+      <Typography style={classname.title}>Additional information</Typography>
       <Typography style={classname.description}>
-        Need something else? We will make it for you!
+        Add an optional note for this demo order.
       </Typography>
       <Box style={classname.form}>
-        <label style={classname.label}>Order Notes</label>
+        <label htmlFor="additionalInformation" style={classname.label}>
+          Order Notes
+        </label>
         <Controller
           name="additionalInformation"
           control={control}
           render={({ field }) => (
             <>
               <textarea
-                placeholder="Need a specific delivery day? Sending a gitf? Let’s say ..."
-                style={classname.additionalInformationArea}
                 {...field}
+                id="additionalInformation"
+                placeholder="Need a specific delivery day? Sending a gift? Add a note here."
+                style={classname.additionalInformationArea}
               />
               <FormHelperText style={classname.Red}>
-                {errors.additionalInformation &&
-                  errors.additionalInformation.message}
+                {errors.additionalInformation?.message}
               </FormHelperText>
             </>
           )}
         />
       </Box>
+
       <Typography style={classname.title}>Confirmation</Typography>
       <Typography style={classname.description}>
-        We are getting to the end. Just few clicks and your order si ready!
+        Review the optional marketing preference and required terms agreement.
       </Typography>
+
       <Box style={classname.differentAddress}>
-        <FormControlLabel
-          style={classname.differentAddresslabel}
-          control={
-            <Controller
-              name="marketingEmails"
-              control={control}
-              render={({ field }) => (
-                <>
-                  <Checkbox
-                   sx={{
-                    color: errors.marketingEmails?"red":'#D1D1D1',
-                    '&.Mui-checked': {
-                      color: '#6A983C',
-                    },
+        <Controller
+          name="marketingEmails"
+          control={control}
+          render={({ field }) => (
+            <FormControlLabel
+              style={classname.differentAddresslabel}
+              control={
+                <Checkbox
+                  checked={Boolean(field.value)}
+                  onChange={(_, checked) => field.onChange(checked)}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                  sx={{
+                    color: "#D1D1D1",
+                    "&.Mui-checked": { color: "#6A983C" },
                   }}
-                    // required
-                    error={!!errors.marketingEmails}
-                    {...field}
-                  />
-                  <FormHelperText style={classname.Red}>
-                    {errors.marketingEmails && errors.marketingEmails.message}
-                  </FormHelperText>
-                </>
-              )}
+                />
+              }
+              label="I would like to receive marketing and newsletter emails."
             />
-          }
-          label="I agree with sending Marketing and newsletter emails. No spam, promised!"
+          )}
         />
       </Box>
+
       <Box style={classname.differentAddress}>
-        <FormControlLabel
-          style={classname.differentAddresslabel}
-          control={
-            <Controller
-              name="termsAndConditions"
-              control={control}
-              render={({ field }) => (
-                <>
-                  <Checkbox
-                    // required
-                    error={!!errors.termsAndConditions}
-                    sx={{
-                      color: errors.termsAndConditions?"red":'#D1D1D1',
-                      '&.Mui-checked': {
-                        color: '#6A983C',
-                      },
-                    }}
-                    {...field}
-                  />
-                  <FormHelperText style={classname.Red}>
-                    {errors.termsAndConditions &&
-                      errors.termsAndConditions.message}
-                  </FormHelperText>
-                </>
-              )}
+        <Controller
+          name="termsAndConditions"
+          control={control}
+          render={({ field }) => (
+            <FormControlLabel
+              style={classname.differentAddresslabel}
+              control={
+                <Checkbox
+                  checked={Boolean(field.value)}
+                  onChange={(_, checked) => field.onChange(checked)}
+                  onBlur={field.onBlur}
+                  inputRef={field.ref}
+                  sx={{
+                    color: errors.termsAndConditions ? "red" : "#D1D1D1",
+                    "&.Mui-checked": { color: "#6A983C" },
+                  }}
+                />
+              }
+              label="I agree with the terms and conditions and privacy policy."
             />
-          }
-          label="I agree with our terms and conditions and privacy policy."
+          )}
         />
+        <FormHelperText style={classname.Red}>
+          {errors.termsAndConditions?.message}
+        </FormHelperText>
       </Box>
     </Box>
   );
