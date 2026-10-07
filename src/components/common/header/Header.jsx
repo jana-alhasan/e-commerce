@@ -1,32 +1,30 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   AppBar,
-  Toolbar,
   Box,
-  Typography,
-  IconButton,
-  Divider,
-  InputAdornment,
-  TextField,
+  Button,
   Stack,
-  Hidden,
+  Toolbar,
+  Typography,
 } from "@mui/material";
 import {
+  LoginOutlined,
+  LogoutOutlined,
   ShoppingBagOutlined,
-  KeyboardArrowDown,
-  Search,
-  PersonOutlineOutlined,
-  Login,
 } from "@mui/icons-material";
-import { selectUser, resetUser } from "../../../redux/authSlice";
-import { clearCart } from "../../../redux/cartSlice";
-import { className } from "./styles";
+import { resetUser, selectUser } from "../../../redux/authSlice";
+import { clearCart, selectCartItems } from "../../../redux/cartSlice";
 
 const Header = () => {
   const user = useSelector(selectUser);
+  const cartItems = useSelector(selectCartItems);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const itemCount = cartItems.reduce(
+    (total, item) => total + (Number(item.quantity) || 0),
+    0
+  );
 
   const handleAuthButtonClick = () => {
     if (user?.token) {
@@ -40,71 +38,49 @@ const Header = () => {
   };
 
   return (
-    <AppBar style={className.header}>
-      <Hidden smDown>
-        <Toolbar style={className.toolbar}>
-          <Box style={className.toolbarItem}>
-            <Typography style={className.subHeaderItemGreen}>
-              Chat with us
-            </Typography>
-            <Typography style={className.subHeaderItem}>+420 336 775 664</Typography>
-            <Typography style={className.subHeaderItem}>
-              info@freshnesecom.com
-            </Typography>
-          </Box>
-          <Box style={className.toolbarItem}>
-            <Typography style={className.subHeaderItemGreen}>Blog</Typography>
-            <Typography style={className.subHeaderItemGreen}>About us</Typography>
-            <Typography style={className.subHeaderItemGreen}>Careers</Typography>
-          </Box>
-        </Toolbar>
-      </Hidden>
-      <Toolbar style={className.toolbar}>
-        <Link to="/" aria-label="Freshnesecom home">
-          <img src="images/logo.svg" alt="Freshnesecom" className="logo" />
-        </Link>
-        <Stack style={className.searchbar} display={{ xs: "none", md: "flex" }}>
-          <IconButton style={className.AllCategories} aria-label="All categories">
-            All categories
-            <KeyboardArrowDown style={className.green} />
-          </IconButton>
-          <Divider style={className.divider} orientation="vertical" flexItem />
-          <TextField
-            size="small"
-            fullWidth
-            id="search"
-            variant="standard"
-            placeholder="Search products, categories ..."
-            inputProps={{ "aria-label": "Search products and categories" }}
-            InputProps={{
-              disableUnderline: true,
-              endAdornment: (
-                <InputAdornment position="end" style={className.icons}>
-                  <Search style={className.icons} />
-                </InputAdornment>
-              ),
-            }}
+    <AppBar position="sticky" color="inherit" elevation={1}>
+      <Toolbar sx={{ gap: 2, justifyContent: "space-between", py: 1 }}>
+        <Stack
+          component={Link}
+          to="/"
+          direction="row"
+          alignItems="center"
+          spacing={1.5}
+          sx={{ color: "inherit", textDecoration: "none" }}
+          aria-label="Freshnesecom home"
+        >
+          <Box
+            component="img"
+            src="images/logo.svg"
+            alt="Freshnesecom"
+            className="logo"
+            sx={{ maxWidth: { xs: 145, sm: 180 } }}
           />
         </Stack>
-        <Hidden mdUp>
-          <Search style={className.icons} aria-label="Search" />
-        </Hidden>
-        <Box style={className.toolbarItem} alignItems="center">
-          <Hidden smDown>
-            <PersonOutlineOutlined style={className.icons} aria-hidden="true" />
-            <Link to="/cart" aria-label="Shopping cart">
-              <ShoppingBagOutlined style={className.icons} />
-            </Link>
-          </Hidden>
-          <IconButton
-            style={className.subHeaderItemGreen}
+
+        <Stack direction="row" alignItems="center" spacing={1}>
+          <Button
+            component={Link}
+            to="/cart"
+            color="inherit"
+            startIcon={<ShoppingBagOutlined />}
+            aria-label={`Shopping cart with ${itemCount} items`}
+          >
+            <Typography component="span" display={{ xs: "none", sm: "inline" }}>
+              Cart
+            </Typography>
+            {itemCount > 0 && <Typography component="span"> ({itemCount})</Typography>}
+          </Button>
+
+          <Button
+            color="primary"
             onClick={handleAuthButtonClick}
+            startIcon={user?.token ? <LogoutOutlined /> : <LoginOutlined />}
             aria-label={user?.token ? "Log out" : "Log in"}
           >
-            <Login style={className.subHeaderItemGreen} />
             {user?.token ? "Logout" : "Login"}
-          </IconButton>
-        </Box>
+          </Button>
+        </Stack>
       </Toolbar>
     </AppBar>
   );
