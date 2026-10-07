@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import {
@@ -18,6 +18,10 @@ import {
 import { KeyboardArrowDown } from "@mui/icons-material";
 import { addToCart } from "../../redux/cartSlice";
 import { selectUser } from "../../redux/authSlice";
+import {
+  fetchAllProducts,
+  selectProductLoading,
+} from "../../redux/productSlice";
 import Detail from "../../components/common/detail/Detail";
 import ImageBox from "../../components/productDetails/imageBox/ImageBox";
 import ProductInfo from "../../components/productDetails/productInfo/ProductInfo";
@@ -33,14 +37,61 @@ const ProductDetails = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const [loginDialogOpen, setLoginDialogOpen] = useState(false);
+  const [lookupStatus, setLookupStatus] = useState("idle");
   const user = useSelector(selectUser);
-  const products = useSelector((state) => state.products.products);
-  const productLoading = useSelector(
-    (state) => state.products.selectProductLoading
-  );
+  const products = useSelector((state) => state.products.products) || [];
+  const productLoading = useSelector(selectProductLoading);
   const product = products.find((item) => item.id === Number(id));
 
-  const { title, price, category, description, image, rating } = product || {};
+  useEffect(() => {
+    if (product || lookupStatus !== "idle") {
+      return;
+    }
+
+    setLookupStatus("loading");
+    dispatch(
+      fetchAllProducts({
+        currentPage: 1,
+        productsPerPage: 20,
+        sortBy: "asc",
+      })
+    )
+      .unwrap()
+      .then(() => setLookupStatus("done"))
+      .catch(() => setLookupStatus("error"));
+  }, [dispatch, lookupStatus, product]);
+
+  if (
+    !product &&
+    (lookupStatus === "idle" || lookupStatus === "loading" || productLoading)
+  ) {
+    return (
+      <Grid container spacing={4}>
+        <Grid item md={6} xs={12}>
+          <ImageSkeleton />
+        </Grid>
+        <Grid item md={6} xs={12}>
+          <DetailsSkeleton />
+        </Grid>
+      </Grid>
+    );
+  }
+
+  if (!product) {
+    return (
+      <Box py={8} textAlign="center" role="status">
+        <Typography variant="h5" gutterBottom>
+          Product not found
+        </Typography>
+        <Typography>
+          We could not load this product. Please return to the catalog and try
+          again.
+        </Typography>
+      </Box>
+    );
+  }
+
+  const { title, price, category, description, image, rating } = product;
   const { rate } = rating || {};
   const productTitle = Array.isArray(title)
     ? title[0] || "not found"
@@ -126,9 +177,7 @@ const ProductDetails = () => {
       return;
     }
 
-    if (product) {
-      dispatch(addToCart(product));
-    }
+    dispatch(addToCart(product));
   };
 
   const handleClose = () => {
