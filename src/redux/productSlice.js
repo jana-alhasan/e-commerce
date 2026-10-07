@@ -1,32 +1,10 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import axios from 'axios';
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { fetchProducts } from "../services/productsApi";
 
 export const fetchAllProducts = createAsyncThunk(
-  'products/fetchAllProducts',
-  async ({ currentPage, productsPerPage, sortBy }) => {
-    try {
-      const response = await axios.get(
-        'https://fakestoreapi.com/products',
-        {
-          params: {
-            limit: productsPerPage * currentPage,
-            sort: sortBy,
-          },
-        }
-      );
-
-      const data = response.data;
-      if (data && data.length > 0 && Array.isArray(data)) {
-        return data;
-      } else {
-        console.error("Invalid data format:", data);
-
-      }
-    } catch (error) {
-      console.error('Error fetching all products:', error);
-
-    }
-  }
+  "products/fetchAllProducts",
+  async ({ currentPage, productsPerPage, sortBy }) =>
+    fetchProducts({ currentPage, productsPerPage, sortBy })
 );
 
 const productsSlice = createSlice({
@@ -35,31 +13,35 @@ const productsSlice = createSlice({
     products: [],
     productsLength: 1,
     productLoading: false,
+    error: null,
   },
   reducers: {
     setProducts: (state, action) => {
       state.products = action.payload;
     },
- 
   },
   extraReducers: (builder) => {
     builder
       .addCase(fetchAllProducts.pending, (state) => {
         state.productLoading = true;
+        state.error = null;
       })
       .addCase(fetchAllProducts.fulfilled, (state, action) => {
         state.productLoading = false;
-        state.products = action.payload;
+        state.products = Array.isArray(action.payload) ? action.payload : [];
+        state.error = null;
       })
-      .addCase(fetchAllProducts.rejected, (state) => {
+      .addCase(fetchAllProducts.rejected, (state, action) => {
         state.productLoading = false;
+        state.error = action.error?.message || "Unable to load products";
       });
   },
 });
 
-export const { setProducts } = productsSlice.actions; 
+export const { setProducts } = productsSlice.actions;
 export const selectProducts = (state) => state.products.products;
-export const productsLength = (state) => state.products.productsLength
+export const productsLength = (state) => state.products.productsLength;
 export const selectProductLoading = (state) => state.products.productLoading;
+export const selectProductError = (state) => state.products.error;
 
 export default productsSlice.reducer;
