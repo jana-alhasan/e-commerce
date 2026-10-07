@@ -1,3 +1,7 @@
+jest.mock("../services/authApi", () => ({
+  fetchLogin: jest.fn(),
+}));
+
 import store, { loadPersistedState, STORAGE_KEY } from "./store";
 import { addToCart, clearCart } from "./cartSlice";
 
