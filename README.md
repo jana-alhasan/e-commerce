@@ -1,67 +1,69 @@
 # E-Commerce Web App
 
-An individual React portfolio project that demonstrates a multi-page shopping flow using Fake Store API data, Redux Toolkit state management, Material UI, and validated checkout forms.
+A responsive React shopping demo built as an individual frontend portfolio project. It focuses on catalog browsing, Redux Toolkit state management, demo authentication, a local cart, validated checkout UI, and a deployable GitHub Pages experience.
 
-## What the app does
+**Live demo:** https://jana-alhasan.github.io/e-commerce/
 
-- Loads product data from Fake Store API.
-- Browses products with pagination and grid/list layouts.
-- Filters by category, price, and rating and supports API sorting.
-- Opens a dedicated details route for each product.
-- Uses Fake Store API authentication for the login flow.
-- Requires a logged-in session before products can be added to the cart.
-- Adds, increments, decrements, removes, and clears cart items through Redux Toolkit.
-- Persists the authenticated session token and cart items in `localStorage` so they survive a refresh.
-- Clears cart state when the user logs out.
-- Validates checkout information with React Hook Form and Yup.
-- Completes a transparent **local demo checkout** that shows a confirmation summary and clears the cart.
-- Uses skeleton/loading states and reusable confirmation dialogs.
+## My role
 
-## Important checkout boundary
+I built this project individually. The repository demonstrates frontend implementation only; it does not claim a production commerce backend, payment processing, real inventory, or real customer orders.
 
-This project does **not** process payments or create a real backend order. The checkout completion is intentionally a local portfolio simulation: it validates the form, summarizes the item count and total, clears the local cart, and tells the user that no payment/backend order occurred.
+## Verified features
 
-The previous hard-coded Fake Store cart synchronization was removed because it used fixed cart/user values and did not represent a real authenticated-user order flow.
+- Browse a product catalog with grid/list layouts and pagination.
+- Filter products by category, rating, and price and change ascending/descending order.
+- Open direct product-detail routes, including after a refresh or fresh page load.
+- Display API-backed product metadata, images, ratings, and review content.
+- Sign in through DummyJSON's public demo-auth endpoint.
+- Require a demo-auth session before adding items to the cart.
+- Add, increment, decrement, remove, and clear local cart items with Redux Toolkit.
+- Persist the demo session and cart in `localStorage` across refreshes.
+- Validate checkout fields with React Hook Form and Yup.
+- Complete a clearly labeled **local demo checkout** that shows a confirmation summary and clears the local cart.
+- Show loading/skeleton states for asynchronous product data.
 
-## Tech stack
+## Demo login
 
-- React 18
-- JavaScript
-- React Router v6
-- Redux Toolkit + React Redux
-- Material UI v5
-- React Hook Form
-- Yup
-- Axios
-- Fake Store API
-- `localStorage`
-- Jest / React Scripts test runner
-- GitHub Actions CI
+The login uses public DummyJSON test data rather than a real account system.
+
+- Username: `emilys`
+- Password: `emilyspass`
+
+These are public demo credentials documented by DummyJSON and are included only so reviewers can exercise the authenticated cart flow.
+
+## Technical implementation
+
+- **React 18 + JavaScript** for the UI.
+- **React Router v6 / HashRouter** for client-side routes that work reliably on GitHub Pages.
+- **Redux Toolkit + React Redux** for authentication, product, and cart state.
+- **Material UI v5** for components and responsive layout.
+- **Axios** for REST requests.
+- **DummyJSON Products API** for public demo catalog/category data.
+- A small normalization boundary maps external product responses into the stable shape used by the UI.
+- **React Hook Form + Yup** for checkout validation.
+- **localStorage** for demo session/cart persistence.
+- **Jest / React Scripts test runner** for focused regression coverage.
+- **GitHub Actions** for clean install, tests, production build, and Pages publishing.
 
 ## Routes
 
-- `/` — product catalog and filters
-- `/login` — Fake Store API login
-- `/product/:id` — product details
-- `/cart` — local Redux cart
-- `/checkout` — validated local demo checkout
+- `#/` — product catalog and filters
+- `#/login` — public demo login
+- `#/product/:id` — product details
+- `#/cart` — local Redux cart
+- `#/checkout` — validated local demo checkout
 
-## State and API design
+## Checkout boundary
 
-Redux Toolkit manages authentication, products, and cart state. API requests are separated into service modules where appropriate. Authentication uses Fake Store API, while cart changes are deliberately local rather than pretending to synchronize with a real user-owned backend cart.
+This project does **not** process payments or create a backend order. Checkout is intentionally a local portfolio simulation: it validates the form, summarizes the item count and total, clears local cart state, and states that no payment/backend order occurred.
 
-Only the session user/token and cart items are persisted. Transient loading and error state is rebuilt at runtime instead of being written to storage.
+The cart is also intentionally local. An earlier fixed-user demo cart synchronization was removed because it did not represent a real authenticated-user order flow.
 
 ## Validation and CI
 
-The repository includes focused regression tests for:
+The repository includes focused regression tests for state behavior, persistence, checkout validation, product API normalization, and demo-auth response handling. GitHub Actions runs a clean dependency install, checks for legacy Material UI imports, runs the test suite, and creates a production build on pull requests and pushes to the default branch.
 
-- cart add/increment/decrement/remove/clear behavior
-- safe handling of an unknown cart item ID
-- checkout validation, including optional marketing consent and required terms acceptance
-- session/cart persistence loading and localStorage write-back
-
-GitHub Actions runs a clean dependency install, rejects legacy Material UI v4 imports, runs the tests, and creates a production build on pull requests and pushes to the default branch.
+The deployed site has also been exercised in headless Chrome for the live catalog and direct product-detail route. This is not a claim of full cross-browser or mobile QA.
 
 ## Run locally
 
@@ -76,8 +78,6 @@ Create a production build with:
 npm run build
 ```
 
-The login endpoint is provided by Fake Store API, so a valid Fake Store API test account is required to exercise authenticated cart actions.
+## Current status
 
-## Project status
-
-The current cleanup focuses on reproducible builds, reliable state behavior, truthful checkout semantics, focused regression coverage, and recruiter-facing evidence. A real payment provider and real order backend are outside the implemented scope and are not claimed.
+The core portfolio flow is implemented and deployed. Remaining work is limited to incremental polish and maintenance; real payments, real orders, and a production account/backend system are intentionally outside this project's scope.
