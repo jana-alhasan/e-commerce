@@ -7,9 +7,8 @@ import {
   Card,
   CardContent,
   CardMedia,
-  Typography,
-  Stack,
   Hidden,
+  Stack,
 } from "@mui/material";
 import { KeyboardArrowRight, ShoppingCartOutlined } from "@mui/icons-material";
 import Detail from "../../common/detail/Detail";
@@ -27,29 +26,18 @@ const ProductCard = ({ product, isGridView }) => {
   const dispatch = useDispatch();
   const user = useSelector(selectUser);
 
-  const { id, title, price, category, description, image, rating } = product || {};
-  const { rate, count } = rating || {};
-  const productTitle = Array.isArray(title)
-    ? title[0] || "not found"
-    : title?.toString() || "not found";
-  const productPrice = Array.isArray(price)
-    ? price[0] || "not found"
-    : price?.toString() || "not found";
-  const productCategory = Array.isArray(category)
-    ? category[0] || "not found"
-    : category?.toString() || "not found";
-  const productDescription = Array.isArray(description)
-    ? description[0] || "not found"
-    : description?.toString() || "not found";
-  const productImage = Array.isArray(image)
-    ? image[0] || "not found"
-    : image?.toString() || "not found";
-  const productRating = Array.isArray(rate)
-    ? rate[0] || "not found"
-    : rate?.toString() || "not found";
-  const productCount = Array.isArray(count)
-    ? count[0] || "0"
-    : count?.toString() || "0";
+  const {
+    id,
+    title = "Untitled product",
+    price = 0,
+    category = "Not provided",
+    description = "",
+    image = "",
+    rating = {},
+    stock,
+    availabilityStatus,
+    shippingInformation,
+  } = product || {};
 
   const handleAddToCartClick = () => {
     if (!user?.token) {
@@ -63,27 +51,17 @@ const ProductCard = ({ product, isGridView }) => {
   };
 
   const handleProductDetailClick = () => {
-    navigate(`/product/${id}`);
-  };
-
-  const handleClose = () => {
-    setLoginDialogOpen(false);
+    if (id !== undefined && id !== null) {
+      navigate(`/product/${id}`);
+    }
   };
 
   const detailsArray = [
-    {
-      label: "Freshness",
-      value: "New (Extra fresh)",
-      textColor: "var(--c-2-a, #6A983C)",
-    },
-    { label: "Farm", value: productCategory },
-    { label: "Delivery", value: "Europe" },
-    {
-      label: "Stock",
-      value: `${productCount || 0} pcs`,
-      textColor: "var(--c-2-a, #6A983C)",
-    },
-  ];
+    { label: "Category", value: category },
+    availabilityStatus && { label: "Availability", value: availabilityStatus },
+    stock !== null && stock !== undefined && { label: "Stock", value: `${stock} items` },
+    shippingInformation && { label: "Shipping", value: shippingInformation },
+  ].filter(Boolean);
 
   return (
     <Card style={className.cardContainer}>
@@ -98,9 +76,9 @@ const ProductCard = ({ product, isGridView }) => {
         >
           <CardMedia
             component="img"
-            image={productImage}
+            image={image}
             style={className.media}
-            alt={productTitle}
+            alt={title}
             onClick={handleProductDetailClick}
           />
         </Box>
@@ -124,18 +102,16 @@ const ProductCard = ({ product, isGridView }) => {
             }
           >
             <Box style={className.cardItem}>
-              <Title content={productTitle} />
-              <Description description={productDescription} />
+              <Title content={title} />
+              <Description description={description} />
               <Hidden smDown>
-                <Rating rate={productRating} />
+                <Rating rate={rating.rate} />
                 {!isGridView &&
                   detailsArray.map((detail) => (
                     <Detail
                       key={detail.label}
                       label={detail.label}
                       value={detail.value}
-                      textColor={detail.textColor}
-                      textDecoration={detail.textDecoration}
                     />
                   ))}
               </Hidden>
@@ -147,21 +123,13 @@ const ProductCard = ({ product, isGridView }) => {
               gap="1rem"
               justifyContent="space-between"
             >
-              <Title content={`${productPrice} USD`} />
+              <Title content={`${price} USD`} />
               {isGridView ? (
                 <Button style={className.buyNow} onClick={handleAddToCartClick}>
                   Add To Cart
                 </Button>
               ) : (
                 <>
-                  <Hidden smDown>
-                    <Typography style={className.description}>
-                      <span style={{ fontWeight: "800" }}>Free Shipping</span>
-                    </Typography>
-                    <Typography style={className.description}>
-                      Delivery in 1 day
-                    </Typography>
-                  </Hidden>
                   <Button
                     style={className.detailButton}
                     onClick={handleProductDetailClick}
@@ -179,7 +147,7 @@ const ProductCard = ({ product, isGridView }) => {
           </Stack>
         </CardContent>
       </Stack>
-      <LoginConfirmationDialog open={loginDialogOpen} onClose={handleClose} />
+      <LoginConfirmationDialog open={loginDialogOpen} onClose={() => setLoginDialogOpen(false)} />
     </Card>
   );
 };
