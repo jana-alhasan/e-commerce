@@ -2,13 +2,16 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { Grid, Typography, Box, Button } from "@mui/material";
-import { addToCart, removeFromCart } from "../../redux/cartSlice";
-import { selectCartItems, selectCartLoading } from "../../redux/cartSlice";
+import {
+  addToCart,
+  removeFromCart,
+  selectCartItems,
+  selectCartLoading,
+} from "../../redux/cartSlice";
 import DeleteConfirmationDialog from "../../components/common/deleteConfirmationDialog/DeleteConfirmationDialog";
 import CartCard from "../../components/cart/cartCard/CartCard";
 import { className } from "./styles";
 import ProductCardSkeleton from "../../components/skeleton/ProductCardSkeleton";
-import DetailsSkeleton from "../../components/skeleton/DetailsSkeleton";
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -47,25 +50,22 @@ const Cart = () => {
     setItemToDelete(product);
     setDeleteConfirmationOpen(true);
   };
-  const calculateTotal = (cartItems) => {
-    if (!cartItems) {
-      return 0;
-    }
-    return cartItems
-      .reduce(
-        (total, cartItem) => total + cartItem.quantity * cartItem.price,
-        0
-      )
-      .toFixed(2);
-  };
 
+  const totalPrice = cartItems.reduce(
+    (total, cartItem) => total + cartItem.quantity * cartItem.price,
+    0
+  );
+  const itemCount = cartItems.reduce(
+    (total, cartItem) => total + cartItem.quantity,
+    0
+  );
 
   return (
     <Grid container spacing={2}>
       <Grid item xs={12} md={7}>
         {cartLoading ? (
           <ProductCardSkeleton />
-        ) : cartItems?.length > 0 ? (
+        ) : cartItems.length > 0 ? (
           cartItems.map((cartItem) => (
             <CartCard
               key={cartItem.id}
@@ -89,13 +89,16 @@ const Cart = () => {
         <Box style={className.checkout}>
           <Typography variant="h4">Order Summary</Typography>
           <Typography style={className.totalPrice}>
-            ${calculateTotal(cartItems)}
+            ${totalPrice.toFixed(2)}
           </Typography>
-          <Link to={"/checkout"}>
-            <Button style={className.checkoutButton}>
-              Checkout Now ({cartItems.length} items)
-            </Button>
-          </Link>
+          <Button
+            component={Link}
+            to="/checkout"
+            style={className.checkoutButton}
+            disabled={itemCount === 0}
+          >
+            Checkout Now ({itemCount} items)
+          </Button>
         </Box>
       </Grid>
     </Grid>

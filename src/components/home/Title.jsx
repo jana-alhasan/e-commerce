@@ -1,32 +1,32 @@
-import { useState } from "react";
 import { Box, Typography, IconButton } from "@mui/material";
+import { GridOn, ReorderSharp } from "@mui/icons-material";
 import Number from "./Number";
-import { GridOn,ReorderSharp } from "@material-ui/icons";
 import { className } from "./styles";
 
-const Title = ({count,setGridView}) => {
-
-  const handleGridView = (event) => {
-    setGridView(true);
-  };
-  const handleListView = (event) => {
-    setGridView(false);
-  };
+const Title = ({ count, setGridView }) => {
   return (
     <Box style={className.titleContainer}>
       <Typography style={className.title}>Categories</Typography>
       <Box style={className.views}>
-      <IconButton style={className.viewButton} onClick={(e)=>handleGridView()}>
-        <GridOn/>
-        Grid view
-      </IconButton>
-      <IconButton style={className.viewButton} onClick={(e)=>handleListView()}>
-        <ReorderSharp/>
-        List view
+        <IconButton
+          style={className.viewButton}
+          onClick={() => setGridView(true)}
+          aria-label="Grid view"
+        >
+          <GridOn />
+          Grid view
         </IconButton>
-        <Box display={{xs:'none', sm:'none',lg:'flex'}}>
-      <Number count={count} />
-      </Box>
+        <IconButton
+          style={className.viewButton}
+          onClick={() => setGridView(false)}
+          aria-label="List view"
+        >
+          <ReorderSharp />
+          List view
+        </IconButton>
+        <Box display={{ xs: "none", sm: "none", lg: "flex" }}>
+          <Number count={count} />
+        </Box>
       </Box>
     </Box>
   );

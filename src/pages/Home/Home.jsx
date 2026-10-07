@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { Grid, Box, Typography, Pagination, List, Button } from "@mui/material";
 import { yupResolver } from "@hookform/resolvers/yup";
-import {
-  fetchProductsByCategory,
-} from "../../services/productsApi";
+import { fetchProductsByCategory } from "../../services/productsApi";
 import {
   fetchCategories,
   fetchCategoryItemCounts,
 } from "../../services/categoriesApi";
 import { validationSchema } from "../../utils/validation/validationSchema";
-import { setProducts,fetchAllProducts,productsLength,setproductsLength } from "../../redux/productSlice";
+import { fetchAllProducts } from "../../redux/productSlice";
 import Title from "../../components/home/Title";
 import Sort from "../../components/home/filters/sort/Sort";
 import Categories from "../../components/home/filters/categories/Categories";
@@ -23,33 +21,30 @@ import AppliedFilters from "../../components/home/AppliedFilters/AppliedFilters"
 import ProductCardSkeleton from "../../components/skeleton/ProductCardSkeleton";
 import CategoriesSkeleton from "../../components/skeleton/CategoriesSkeleton";
 
+const PRODUCTS_PER_PAGE = 5;
+
 function HomePage() {
   const [isGridview, setGridView] = useState(false);
   const products = useSelector((state) => state.products.products);
   const productLoading = useSelector((state) => state.products.productLoading);
-  // const DataLength=useSelector(productsLength);
-  const [dataLength, setdataLength] = useState(0);
+  const [dataLength, setDataLength] = useState(0);
   const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [categories, setCategories] = useState([]);
-  const [categoryCount, setCategoryCount] = useState([0]);
+  const [categoryCount, setCategoryCount] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [appliedPriceRange, setAppliedPriceRange] = useState(null);
   const [sortBy, setSortBy] = useState(null);
   const [selectedRating, setSelectedRating] = useState(null);
-  const productsPerPage = 5;
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
   const dispatch = useDispatch();
 
+  const indexOfLastProduct = currentPage * PRODUCTS_PER_PAGE;
+  const indexOfFirstProduct = indexOfLastProduct - PRODUCTS_PER_PAGE;
   const currentProducts = filteredProducts.slice(
     indexOfFirstProduct,
     indexOfLastProduct
   );
-
-
- 
 
   const {
     control,
@@ -64,52 +59,32 @@ function HomePage() {
 
   const handleReset = () => {
     setAppliedPriceRange(null);
-    reset({
-      minPrice: 0,
-      maxPrice: 0,
-    });
+    reset({ minPrice: 0, maxPrice: 0, priceRange: [0, 1000] });
     setSelectedRating(null);
     setSelectedCategories([]);
     setSortBy(null);
+    setCurrentPage(1);
   };
 
   const isAnyFilterApplied =
     selectedCategories.length > 0 ||
-    sortBy ||
+    Boolean(sortBy) ||
     appliedPriceRange?.minPrice > 0 ||
     appliedPriceRange?.maxPrice > 0 ||
-    selectedRating;
-
-    useEffect(() => {
-      const fetchData = async () => {
-        try {
-         const response = await dispatch(fetchAllProducts({ currentPage, productsPerPage,sortBy })); 
-          dispatch(setProducts(response.payload));    
-        } catch (error) {
-          console.error('Error fetching data:', error);     
-        }
-      };
-  
-      fetchData();
-    }, [ currentPage, productsPerPage]);
-  
-    useEffect(() => {
-      const fetchData = async () => {
-        try {
-  
-          const response = await dispatch(fetchAllProducts({sortBy}));
-          setdataLength(response.payload.length);
-        } catch (error) {
-          console.error('Error fetching data:', error);       
-        }
-      };
-  
-      fetchData();
-    }, [dispatch]);
-
+    Boolean(selectedRating);
 
   useEffect(() => {
-    setFilteredProducts(products);
+    dispatch(
+      fetchAllProducts({
+        currentPage,
+        productsPerPage: PRODUCTS_PER_PAGE,
+        sortBy,
+      })
+    );
+  }, [currentPage, dispatch, sortBy]);
+
+  useEffect(() => {
+    setFilteredProducts(Array.isArray(products) ? products : []);
   }, [products]);
 
   useEffect(() => {
@@ -129,9 +104,19 @@ function HomePage() {
   }, []);
 
   useEffect(() => {
+    if (!categories.length) {
+      setCategoryCount([]);
+      setDataLength(0);
+      return;
+    }
+
     fetchCategoryItemCounts(categories)
       .then((itemCounts) => {
-        setCategoryCount(itemCounts);
+        const normalizedCounts = itemCounts.map((count) => Number(count) || 0);
+        setCategoryCount(normalizedCounts);
+        setDataLength(
+          normalizedCounts.reduce((total, count) => total + count, 0)
+        );
       })
       .catch((error) => {
         console.error("Error fetching category item counts:", error);
@@ -144,6 +129,7 @@ function HomePage() {
 
   const handleSortChange = (event) => {
     setSortBy(event.target.value);
+    setCurrentPage(1);
   };
 
   const handleRatingChange = (newRating) => {
@@ -152,49 +138,41 @@ function HomePage() {
 
   const handleSortCancel = () => {
     setSortBy(null);
+    setCurrentPage(1);
   };
 
   const applyFilters = async (formData) => {
-
     try {
       const { minPrice, maxPrice } = formData;
-
-
-      let filteredProducts;
+      let nextProducts;
 
       if (selectedCategories.length > 0) {
-        const promises = selectedCategories.map(async (category) => {
-          try {
-            return await fetchProductsByCategory(
+        const categoryProducts = await Promise.all(
+          selectedCategories.map((category) =>
+            fetchProductsByCategory(
               category,
               currentPage,
-              productsPerPage,
+              PRODUCTS_PER_PAGE,
               sortBy
-            );
-          } catch (error) {
-            console.error(
-              `Error fetching products for category ${category}:`,
-              error
-            );
-            throw error;
-          }
-        });
-
-        const categoryProducts = await Promise.all(promises);
-        filteredProducts = categoryProducts.flat();
-      } else {
-
-        filteredProducts = await fetchAllProducts(
-          currentPage,
-          productsPerPage,
-          sortBy
+            )
+          )
         );
+        nextProducts = categoryProducts.flat();
+      } else {
+        nextProducts = await dispatch(
+          fetchAllProducts({
+            currentPage,
+            productsPerPage: PRODUCTS_PER_PAGE,
+            sortBy,
+          })
+        ).unwrap();
       }
 
-      const filteredByPrice = filteredProducts.filter(
+      const safeProducts = Array.isArray(nextProducts) ? nextProducts : [];
+      const filteredByPrice = safeProducts.filter(
         (product) =>
-          (!minPrice || product.price >= minPrice) &&
-          (!maxPrice || product.price <= maxPrice)
+          (!minPrice || product.price >= Number(minPrice)) &&
+          (!maxPrice || product.price <= Number(maxPrice))
       );
 
       const filteredByRating = selectedRating
@@ -205,31 +183,25 @@ function HomePage() {
         : filteredByPrice;
 
       setFilteredProducts(filteredByRating);
-      setAppliedPriceRange({
-        minPrice: formData.minPrice,
-        maxPrice: formData.maxPrice,
-      });
+      setAppliedPriceRange({ minPrice, maxPrice });
+      setCurrentPage(1);
     } catch (error) {
-      console.error("Error in applyFilters:", error);
+      console.error("Error applying filters:", error);
     }
   };
 
   const handleCategoryChange = (category) => {
-    setSelectedCategories((prevSelectedCategories) => {
-      if (prevSelectedCategories.includes(category)) {
-        return prevSelectedCategories.filter((c) => c !== category);
-      } else {
-        return [...prevSelectedCategories, category];
-      }
-    });
+    setSelectedCategories((previous) =>
+      previous.includes(category)
+        ? previous.filter((item) => item !== category)
+        : [...previous, category]
+    );
   };
 
   const handleCancelCategory = (category) => {
-    const updatedCategories = selectedCategories.filter(
-      (selectedCategory) => selectedCategory !== category
+    setSelectedCategories((previous) =>
+      previous.filter((item) => item !== category)
     );
-
-    setSelectedCategories(updatedCategories);
   };
 
   return (
@@ -238,37 +210,31 @@ function HomePage() {
         <Title count={dataLength} setGridView={setGridView} />
       </Grid>
       <Grid item xs={12}>
-        <Box display={"flex"} alignItems={"center"}>
-          <Typography variant="p" color="gray">
+        <Box display="flex" alignItems="center">
+          <Typography component="span" color="gray">
             Applied Filters:
           </Typography>
-          <Box display={"flex"}>
-            {selectedCategories.length > 0 ? (
-              <Box>
-                {selectedCategories.map((category) => (
-                  <AppliedFilters
-                    category={category}
-                    handleCancelCategory={() => handleCancelCategory(category)}
-                  />
-                ))}
-              </Box>
-            ) : (
-              ""
-            )}
+          <Box display="flex">
+            {selectedCategories.map((category) => (
+              <AppliedFilters
+                key={category}
+                category={category}
+                handleCancelCategory={() => handleCancelCategory(category)}
+              />
+            ))}
             {sortBy && (
               <AppliedFilters
                 category={`Sort: ${sortBy}`}
-                handleCancelCategory={() => handleSortCancel()}
+                handleCancelCategory={handleSortCancel}
               />
             )}
-
             {(appliedPriceRange?.minPrice !== 0 ||
               appliedPriceRange?.maxPrice !== 0) &&
               appliedPriceRange?.minPrice !== undefined &&
               appliedPriceRange?.maxPrice !== undefined && (
                 <AppliedFilters
                   category={`Price: ${appliedPriceRange.minPrice} - ${appliedPriceRange.maxPrice}`}
-                  handleCancelCategory={() => handleReset()}
+                  handleCancelCategory={handleReset}
                 />
               )}
             {selectedRating && (
@@ -285,6 +251,7 @@ function HomePage() {
           </Box>
         </Box>
       </Grid>
+
       <Grid item md={3} lg={2}>
         <form onSubmit={handleSubmit(applyFilters)}>
           <Box display={{ xs: "none", sm: "none", md: "block", lg: "block" }}>
@@ -292,14 +259,15 @@ function HomePage() {
             <Typography variant="h6" style={{ margin: "0 24px" }}>
               Categories List
             </Typography>
-            {categories?.length > 0 && !categoriesLoading ? (
+            {categories.length > 0 && !categoriesLoading ? (
               <List>
                 {categories.map((category, index) => (
                   <Categories
+                    key={category}
                     index={index}
                     handleCategoryChange={() => handleCategoryChange(category)}
                     category={category}
-                    categoryCount={categoryCount[index]}
+                    categoryCount={categoryCount[index] || 0}
                   />
                 ))}
               </List>
@@ -329,14 +297,13 @@ function HomePage() {
         md={9}
         lg={10}
         spacing={3}
-        display={"flex"}
-        justifyContent={"center"}
+        display="flex"
+        justifyContent="center"
         marginTop={6}
       >
         {productLoading ? (
           <ProductCardSkeleton />
         ) : (
-          currentProducts?.length > 0 &&
           currentProducts.map((product) => (
             <Grid
               item
@@ -345,8 +312,8 @@ function HomePage() {
               sm={isGridview ? 5 : 12}
               xs={isGridview ? 7 : 12}
               gap={{ sm: "1rem" }}
-              display={"flex"}
-              flexDirection={"column"}
+              display="flex"
+              flexDirection="column"
               alignItems={isGridview ? "center" : "start"}
             >
               <ProductCard product={product} isGridView={isGridview} />
@@ -354,9 +321,11 @@ function HomePage() {
           ))
         )}
       </Grid>
-      <Grid item md={12} display={"flex"} justifyContent={"space-between"}>
+
+      <Grid item md={12} display="flex" justifyContent="space-between">
         <Pagination
-          count={dataLength/ productsPerPage}
+          count={Math.max(1, Math.ceil(dataLength / PRODUCTS_PER_PAGE))}
+          page={currentPage}
           onChange={handlePageChange}
           variant="outlined"
           shape="rounded"

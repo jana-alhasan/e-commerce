@@ -1,4 +1,3 @@
-// Login.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,54 +16,52 @@ const Login = () => {
   const dispatch = useDispatch();
   const [errors, setErrors] = useState({});
   const error = useSelector(selectError);
-  const user = useSelector(selectUser);
   const [formData, setFormData] = useState({
-    username: "mor_2314",
-    password: "83r5^_",
+    username: "",
+    password: "",
   });
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const handleInputChange = (event) => {
+    setFormData((current) => ({
+      ...current,
+      [event.target.name]: event.target.value,
+    }));
   };
 
-    const validate = () => {
+  const validate = () => {
     const newErrors = {};
+
     if (!formData.username.trim()) {
       newErrors.username = "Username is required";
     }
-    
+
     if (!formData.password.trim()) {
       newErrors.password = "Password is required";
     }
-    
+
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-   const newErrors = validate();
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const newErrors = validate();
     setErrors(newErrors);
+
     if (Object.keys(newErrors).length > 0) {
       return;
     }
-    dispatch(loginUser(formData))
-    .unwrap()
-    .then(() => {
-      
-        navigate('/');
-      
-    })
-     .catch(() => {
-        // authSlice already stores a user-facing message in `error`,
-        // shown below via <FormHelperText>{error}</FormHelperText>
-      });
+
+    try {
+      await dispatch(loginUser(formData)).unwrap();
+      navigate("/");
+    } catch (requestError) {
+      // authSlice exposes the user-facing login error below.
+    }
   };
 
   return (
-    <Grid container style={className.container} justifyContent={"center"}>
+    <Grid container style={className.container} justifyContent="center">
       <Grid
         item
         md={6}
@@ -93,9 +90,10 @@ const Login = () => {
             id="username"
             label="Username"
             name="username"
+            autoComplete="username"
             value={formData.username}
             onChange={handleInputChange}
-            error={!!errors.username}
+            error={Boolean(errors.username)}
             helperText={errors.username}
           />
           <TextField
@@ -107,9 +105,10 @@ const Login = () => {
             label="Password"
             type="password"
             id="password"
+            autoComplete="current-password"
             value={formData.password}
             onChange={handleInputChange}
-            error={!!errors.password}
+            error={Boolean(errors.password)}
             helperText={errors.password}
           />
           <Button
@@ -121,7 +120,7 @@ const Login = () => {
             Login
           </Button>
         </form>
-        <FormHelperText>{error}</FormHelperText>
+        {error && <FormHelperText error>{error}</FormHelperText>}
       </Grid>
     </Grid>
   );
